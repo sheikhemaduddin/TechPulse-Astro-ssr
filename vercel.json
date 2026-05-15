@@ -2,10 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "pnpm install",
-  "buildCommand": "pnpm build",
-  "functions": {
-    ".vercel/output/functions/**/*.func": {
-      "runtime": "nodejs22.x"
-    }
-  }
+  "buildCommand": "pnpm build"
 }
