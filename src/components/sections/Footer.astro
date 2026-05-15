@@ -1,0 +1,19 @@
+---
+---
+<footer style="background:var(--color-surface);border-top:1px solid var(--color-border);padding:40px 0;margin-top:80px">
+  <div class="container" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:32px">
+    <div>
+      <p style="font-weight:800;font-size:20px;margin:0 0 10px;letter-spacing:-1px">Tech<span style="color:var(--color-accent)">Pulse</span></p>
+      <p style="color:var(--color-muted);font-size:14px;line-height:1.7;max-width:280px">The best source for technology news, tutorials, and insights for modern developers.</p>
+    </div>
+    {[["Topics",["Artificial Intelligence","Web Development","DevOps","Mobile","Security"]],["Company",["About","Careers","Press","Blog"]],["Legal",["Privacy","Terms","Cookies","Contact"]]].map(([h,links]) => (
+      <div>
+        <p style="font-size:12px;font-weight:700;color:var(--color-muted);text-transform:uppercase;letter-spacing:.8px;margin:0 0 14px">{h}</p>
+        {links.map(l => <p style="margin:0 0 8px"><a href="#" style="color:var(--color-muted);font-size:14px">{l}</a></p>)}
+      </div>
+    ))}
+  </div>
+  <div class="container" style="border-top:1px solid var(--color-border);padding-top:24px;text-align:center;color:var(--color-muted);font-size:13px">
+    © {new Date().getFullYear()} TechPulse. Built with Astro SSR + Fastify.
+  </div>
+</footer>

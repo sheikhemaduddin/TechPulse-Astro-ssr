@@ -1,0 +1,30 @@
+---
+import { getCategories } from "../../lib/api.js";
+
+let categories = [];
+try { categories = (await getCategories()).categories.slice(0, 5); } catch {}
+---
+
+<header style="background:var(--color-surface);border-bottom:1px solid var(--color-border);position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)">
+  <div class="container" style="height:64px;display:flex;align-items:center;justify-content:space-between;gap:24px">
+    <a href="/" style="font-weight:800;font-size:20px;letter-spacing:-1px">
+      Tech<span style="color:var(--color-accent)">Pulse</span>
+    </a>
+    <nav style="display:flex;gap:4px;align-items:center;flex:1;justify-content:center">
+      <a href="/" style="padding:6px 14px;border-radius:8px;font-size:14px;font-weight:500;color:var(--color-muted);transition:color .15s" class="nav-link">Home</a>
+      {categories.map(c => (
+        <a href={`/category/${c.slug}`} style={`padding:6px 14px;border-radius:8px;font-size:14px;font-weight:500;color:var(--color-muted);transition:color .15s`} class="nav-link">
+          {c.icon} {c.name}
+        </a>
+      ))}
+    </nav>
+    <div style="display:flex;gap:8px;align-items:center">
+      <a href="/blog" class="btn btn-outline" style="padding:8px 16px;font-size:13px">All Posts</a>
+      <a href="/login" class="btn btn-primary" style="padding:8px 16px;font-size:13px">Sign In</a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .nav-link:hover { color: var(--color-text) !important; }
+</style>

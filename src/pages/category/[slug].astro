@@ -1,0 +1,43 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PostCard from "../../components/ui/PostCard.astro";
+import { getCategory, getPosts } from "../../lib/api.js";
+
+const { slug } = Astro.params;
+
+let category = null;
+let posts = [];
+
+try {
+  [category, posts] = await Promise.all([
+    getCategory(slug),
+    getPosts({ category: slug, limit: 12 }).then(r => r.posts),
+  ]);
+} catch (e) {
+  return Astro.redirect("/blog");
+}
+---
+
+<BaseLayout title={category?.name} description={`${category?.name} articles on TechPulse`}>
+  <div class="container" style="padding-top:48px;padding-bottom:64px">
+    <div style="margin-bottom:36px">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+        <span style="font-size:48px">{category.icon}</span>
+        <div>
+          <h1 style="margin:0 0 4px;font-size:32px;font-weight:800">{category.name}</h1>
+          <p style="margin:0;color:var(--color-muted);font-size:14px">{posts.length} articles published</p>
+        </div>
+      </div>
+      <div style={`height:4px;width:80px;background:${category.color};border-radius:2px`}/>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
+      {posts.map(p => <PostCard post={p}/>)}
+    </div>
+    {posts.length === 0 && (
+      <div style="text-align:center;padding:80px 0;color:var(--color-muted)">
+        <p style="font-size:48px;margin:0 0 12px">{category.icon}</p>
+        <p style="font-size:18px;font-weight:600;color:var(--color-text)">No articles yet in {category.name}</p>
+      </div>
+    )}
+  </div>
+</BaseLayout>

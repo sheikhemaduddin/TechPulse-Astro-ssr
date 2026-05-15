@@ -1,0 +1,23 @@
+{
+  "name": "astro-frontend",
+  "version": "1.0.0",
+  "description": "TechPulse — Astro SSR frontend with pnpm",
+  "scripts": {
+    "dev": "astro dev",
+    "mock-api": "node scripts/mock-api.mjs",
+    "dev:all": "node scripts/mock-api.mjs & astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "start": "node ./dist/server/entry.mjs"
+  },
+  "dependencies": {
+    "astro": "^4.3.2",
+    "@astrojs/node": "^8.1.0",
+    "nanostores": "^0.9.5",
+    "@nanostores/persistent": "^0.9.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.4.1",
+    "typescript": "^5.3.3"
+  }
+}

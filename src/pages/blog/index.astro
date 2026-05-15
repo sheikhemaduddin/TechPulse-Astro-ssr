@@ -1,0 +1,75 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PostCard from "../../components/ui/PostCard.astro";
+import { getPosts, getCategories } from "../../lib/api.js";
+
+const url = Astro.url;
+const category = url.searchParams.get("category") || "";
+const page = parseInt(url.searchParams.get("page") || "1");
+const q = url.searchParams.get("q") || "";
+
+let postsData = { posts: [], total: 0, pages: 1 };
+let categories = [];
+
+try {
+  const params = { limit: 9, page };
+  if (category) params.category = category;
+  if (q) params.q = q;
+  [postsData, categories] = await Promise.all([
+    getPosts(params),
+    getCategories().then(r => r.categories),
+  ]);
+} catch (e) {
+  console.error(e.message);
+}
+---
+
+<BaseLayout title="All Articles" description="Browse all TechPulse articles">
+  <div class="container" style="padding-top:48px;padding-bottom:64px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:14px">
+      <div>
+        <h1 style="margin:0 0 4px;font-size:32px;font-weight:800">All Articles</h1>
+        <p style="margin:0;color:var(--color-muted);font-size:14px">{postsData.total} articles published</p>
+      </div>
+      <form method="GET" action="/blog" style="display:flex;gap:8px">
+        <input name="q" value={q} placeholder="Search articles..." style="padding:9px 14px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:8px;color:var(--color-text);font-size:14px;width:220px"/>
+        <button type="submit" class="btn btn-primary" style="padding:9px 16px">Search</button>
+      </form>
+    </div>
+
+    <!-- Category Filter -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px">
+      <a href="/blog" class={`btn ${!category ? "btn-primary" : "btn-outline"}`} style="padding:7px 14px;font-size:13px">All</a>
+      {categories.map(c => (
+        <a href={`/blog?category=${c.slug}`} class={`btn ${category===c.slug ? "btn-primary" : "btn-outline"}`} style="padding:7px 14px;font-size:13px">
+          {c.icon} {c.name}
+        </a>
+      ))}
+    </div>
+
+    <!-- Posts Grid -->
+    {postsData.posts.length > 0 ? (
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:40px">
+        {postsData.posts.map(p => <PostCard post={p}/>)}
+      </div>
+    ) : (
+      <div style="text-align:center;padding:80px 0;color:var(--color-muted)">
+        <p style="font-size:48px;margin:0 0 12px">📭</p>
+        <p style="font-size:18px;font-weight:600;color:var(--color-text)">No articles found</p>
+        <p style="font-size:14px">Try a different search or category</p>
+      </div>
+    )}
+
+    <!-- Pagination -->
+    {postsData.pages > 1 && (
+      <div style="display:flex;justify-content:center;gap:8px">
+        {Array.from({length:postsData.pages},(_,i)=>i+1).map(p => (
+          <a href={`/blog?page=${p}${category?"&category="+category:""}${q?"&q="+q:""}`}
+             class={`btn ${p===page ? "btn-primary" : "btn-outline"}`} style="padding:8px 14px;font-size:13px;min-width:40px;justify-content:center">
+            {p}
+          </a>
+        ))}
+      </div>
+    )}
+  </div>
+</BaseLayout>

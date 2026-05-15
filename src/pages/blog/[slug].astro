@@ -1,0 +1,128 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPost } from "../../lib/api.js";
+
+const { slug } = Astro.params;
+
+let post = null;
+let error = null;
+
+try {
+  post = await getPost(slug);
+} catch (e) {
+  error = e.message;
+}
+
+if (!post) return Astro.redirect("/blog");
+---
+
+<BaseLayout title={post.title} description={post.excerpt}>
+  <div class="container" style="padding-top:48px;padding-bottom:64px">
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:40px;align-items:start">
+      <article>
+        <!-- Category & Meta -->
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
+          <a href={`/category/${post.category?.slug}`} style={`background:${post.category?.color}20;color:${post.category?.color};padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700`}>
+            {post.category?.icon} {post.category?.name}
+          </a>
+          {post.tags?.map(t => (
+            <span style="background:var(--color-surface2);color:var(--color-muted);padding:4px 10px;border-radius:20px;font-size:11px">#{t}</span>
+          ))}
+        </div>
+
+        <!-- Title -->
+        <h1 style="margin:0 0 20px;font-size:36px;font-weight:800;line-height:1.2">{post.title}</h1>
+
+        <!-- Author & Stats -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--color-border);flex-wrap:wrap;gap:12px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <img src={post.author?.avatar} alt={post.author?.name} style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--color-border)"/>
+            <div>
+              <p style="margin:0 0 2px;font-weight:600;font-size:14px">{post.author?.name}</p>
+              <p style="margin:0;font-size:12px;color:var(--color-muted)">{post.publishedAt} · {post.readTime} min read</p>
+            </div>
+          </div>
+          <div style="display:flex;gap:16px;font-size:13px;color:var(--color-muted)">
+            <span>👁 {post.views?.toLocaleString()}</span>
+            <span>❤️ {post.likes}</span>
+            <span>💬 {post.comments?.length || 0}</span>
+          </div>
+        </div>
+
+        <!-- Cover Image -->
+        <img src={post.coverImage} alt={post.title} style="width:100%;height:380px;object-fit:cover;border-radius:var(--radius);margin-bottom:32px"/>
+
+        <!-- Content -->
+        <div style="font-size:17px;line-height:1.85;color:#cbd5e1">
+          {post.content?.split("\n\n").map(para => <p style="margin-bottom:20px">{para}</p>)}
+        </div>
+
+        <!-- Like Button -->
+        <div style="margin-top:32px;padding:24px;background:var(--color-surface);border-radius:var(--radius);text-align:center;border:1px solid var(--color-border)">
+          <p style="margin:0 0 12px;font-size:15px;color:var(--color-muted)">Found this helpful?</p>
+          <button id="like-btn" class="btn btn-primary" style="font-size:15px;padding:12px 28px">
+            ❤️ Like this article ({post.likes})
+          </button>
+        </div>
+
+        <!-- Comments -->
+        <div style="margin-top:40px">
+          <h3 style="margin:0 0 20px;font-size:20px;font-weight:700">💬 Comments ({post.comments?.length || 0})</h3>
+          {post.comments?.map(c => (
+            <div style="display:flex;gap:12px;padding:16px 0;border-bottom:1px solid var(--color-border)">
+              <img src={c.author?.avatar} alt={c.author?.name} style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0"/>
+              <div style="flex:1">
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                  <span style="font-weight:600;font-size:14px">{c.author?.name}</span>
+                  <span style="font-size:12px;color:var(--color-muted)">{c.createdAt}</span>
+                </div>
+                <p style="margin:0;font-size:14px;color:var(--color-muted);line-height:1.6">{c.content}</p>
+                <p style="margin:6px 0 0;font-size:12px;color:var(--color-muted)">❤️ {c.likes}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </article>
+
+      <!-- Sidebar -->
+      <aside style="position:sticky;top:80px">
+        <!-- Author Card -->
+        {post.author && (
+          <div class="card" style="padding:20px;margin-bottom:20px;text-align:center">
+            <img src={post.author.avatar} alt={post.author.name} style="width:64px;height:64px;border-radius:50%;object-fit:cover;margin:0 auto 12px;display:block;border:2px solid var(--color-border)"/>
+            <p style="margin:0 0 4px;font-weight:700;font-size:16px">{post.author.name}</p>
+            <p style="margin:0 0 12px;font-size:13px;color:var(--color-muted)">{post.author.bio}</p>
+            <div style="display:flex;justify-content:center;gap:20px;font-size:13px;color:var(--color-muted)">
+              <span>👥 {post.author.followers} followers</span>
+            </div>
+          </div>
+        )}
+
+        <!-- Related Posts -->
+        {post.related?.length > 0 && (
+          <div class="card" style="padding:20px">
+            <h4 style="margin:0 0 16px;font-size:15px;font-weight:700">Related Articles</h4>
+            {post.related.map(r => (
+              <a href={`/blog/${r.slug}`} style="display:block;padding:10px 0;border-bottom:1px solid var(--color-border);text-decoration:none">
+                <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:var(--color-text);line-height:1.4">{r.title}</p>
+                <p style="margin:0;font-size:11px;color:var(--color-muted)">{r.readTime} min · {(r.views/1000).toFixed(0)}k views</p>
+              </a>
+            ))}
+          </div>
+        )}
+      </aside>
+    </div>
+  </div>
+</BaseLayout>
+
+<script define:vars={{ slug: post.slug }}>
+  document.getElementById("like-btn")?.addEventListener("click", async function() {
+    try {
+      const res = await fetch(`/api/proxy/posts/${slug}/like`, { method: "PATCH" });
+      const data = await res.json();
+      this.textContent = `❤️ Like this article (${data.likes})`;
+      this.disabled = true;
+      this.style.opacity = "0.7";
+    } catch {}
+  });
+</script>
