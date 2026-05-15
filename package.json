@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "description": "TechPulse — Astro SSR frontend with pnpm",
   "packageManager": "pnpm@8.15.4",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "astro dev",
     "mock-api": "node scripts/mock-api.mjs",
-    "build": "astro build",
+    "build": "astro build && node scripts/patch-vercel-runtime.mjs",
     "preview": "astro preview",
     "start": "node ./dist/server/entry.mjs"
   },
