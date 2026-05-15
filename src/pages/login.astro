@@ -34,8 +34,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 </BaseLayout>
 
 <script>
-  const API = import.meta.env.PUBLIC_API_URL || "http://localhost:4000";
-
   document.querySelectorAll(".demo-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       document.getElementById("email").value = btn.dataset.email;
@@ -49,7 +47,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     const errEl = document.getElementById("error-msg");
     errEl.style.display = "none";
     try {
-      const res = await fetch(`${API}/api/auth/login`, {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

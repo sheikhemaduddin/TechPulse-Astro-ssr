@@ -1,8 +1,21 @@
 // ─── API Client ───────────────────────────────────────────────────────────────
-// Reads PUBLIC_API_URL from env — set this to your Fastify backend URL
+// Set PUBLIC_API_URL in Vercel to your live Fastify backend.
+// If the API is unreachable, demo content from mock-data.js is used automatically.
+import { mockAPI } from "./mock-data.js";
+
 const BASE = import.meta.env.PUBLIC_API_URL || "http://localhost:4000";
 
+function shouldUseMockFirst() {
+  if (import.meta.env.PUBLIC_USE_MOCK === "true") return true;
+  if (!import.meta.env.PUBLIC_API_URL) return true;
+  return /localhost|127\.0\.0\.1/.test(BASE);
+}
+
 async function fetchAPI(endpoint, options = {}) {
+  if (shouldUseMockFirst()) {
+    return mockAPI(endpoint, options);
+  }
+
   try {
     const res = await fetch(`${BASE}${endpoint}`, {
       headers: { "Content-Type": "application/json", ...options.headers },
@@ -14,8 +27,8 @@ async function fetchAPI(endpoint, options = {}) {
     }
     return res.json();
   } catch (err) {
-    console.error(`API Error [${endpoint}]:`, err.message);
-    throw err;
+    console.warn(`API Error [${endpoint}]: ${err.message} — using demo data`);
+    return mockAPI(endpoint, options);
   }
 }
 

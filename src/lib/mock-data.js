@@ -1,4 +1,4 @@
-const categories = [
+export const categories = [
   { id: "c1", slug: "ai", name: "AI & ML", icon: "🤖", color: "#8b5cf6", postCount: 2 },
   { id: "c2", slug: "web", name: "Web Dev", icon: "🌐", color: "#3b82f6", postCount: 2 },
   { id: "c3", slug: "devops", name: "DevOps", icon: "⚙️", color: "#10b981", postCount: 1 },
@@ -21,7 +21,7 @@ const authors = {
   },
 };
 
-const posts = [
+export const posts = [
   {
     id: "p1",
     slug: "future-of-ai-agents",
@@ -150,7 +150,7 @@ const commentsByPost = {
   ],
 };
 
-const users = {
+export const users = {
   "alex@techpulse.com": { id: "u0", name: "Alex Admin", role: "admin", email: "alex@techpulse.com" },
   "sarah@techpulse.com": { id: "u1", name: "Sarah Chen", role: "author", email: "sarah@techpulse.com" },
   "marcus@techpulse.com": { id: "u2", name: "Marcus Rivera", role: "author", email: "marcus@techpulse.com" },
@@ -184,9 +184,72 @@ export function listPosts({ limit = 9, page = 1, category = "", q = "" } = {}) {
   const total = filtered.length;
   const pages = Math.max(1, Math.ceil(total / limit));
   const start = (page - 1) * limit;
-  const slice = filtered.slice(start, start + limit);
 
-  return { posts: slice, total, pages, page };
+  return { posts: filtered.slice(start, start + limit), total, pages, page };
 }
 
-export { categories, posts, users };
+export function mockAPI(endpoint, options = {}) {
+  const method = options.method || "GET";
+  const [path, query = ""] = endpoint.split("?");
+  const params = Object.fromEntries(new URLSearchParams(query));
+
+  if (path === "/api/posts/featured") {
+    return { posts: posts.filter((p) => p.featured) };
+  }
+
+  if (path === "/api/posts") {
+    return listPosts({
+      limit: Number(params.limit) || 9,
+      page: Number(params.page) || 1,
+      category: params.category || "",
+      q: params.q || "",
+    });
+  }
+
+  const postMatch = path.match(/^\/api\/posts\/([^/]+)$/);
+  if (postMatch && method === "GET") {
+    const post = getPostDetail(postMatch[1]);
+    if (!post) throw new Error("Post not found");
+    return post;
+  }
+
+  const likeMatch = path.match(/^\/api\/posts\/([^/]+)\/like$/);
+  if (likeMatch && method === "PATCH") {
+    const post = posts.find((p) => p.slug === likeMatch[1]);
+    if (!post) throw new Error("Post not found");
+    post.likes += 1;
+    return { likes: post.likes };
+  }
+
+  if (path === "/api/categories") {
+    return { categories };
+  }
+
+  const categoryMatch = path.match(/^\/api\/categories\/([^/]+)$/);
+  if (categoryMatch) {
+    const category = categories.find((c) => c.slug === categoryMatch[1]);
+    if (!category) throw new Error("Category not found");
+    return category;
+  }
+
+  if (path === "/api/analytics/top-posts") {
+    return { posts: [...posts].sort((a, b) => b.views - a.views).slice(0, 5) };
+  }
+
+  if (path === "/api/auth/login" && method === "POST") {
+    const { email, password } = JSON.parse(options.body || "{}");
+    const user = users[email];
+    if (!user || password !== "password123") throw new Error("Invalid email or password");
+    return { token: `mock-token-${user.id}`, user };
+  }
+
+  if (path === "/api/auth/register" && method === "POST") {
+    const body = JSON.parse(options.body || "{}");
+    return {
+      token: "mock-token-new",
+      user: { id: "u99", name: body.name || "New User", email: body.email, role: "reader" },
+    };
+  }
+
+  throw new Error(`No mock for ${method} ${endpoint}`);
+}
