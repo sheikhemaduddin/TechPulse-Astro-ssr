@@ -1,27 +1,14 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PostCard from "../../components/ui/PostCard.astro";
-import { getPosts, getCategories } from "../../lib/api.js";
+import { categories, listPosts } from "../../lib/mock-data.js";
 
 const url = Astro.url;
 const category = url.searchParams.get("category") || "";
 const page = parseInt(url.searchParams.get("page") || "1");
 const q = url.searchParams.get("q") || "";
 
-let postsData = { posts: [], total: 0, pages: 1 };
-let categories = [];
-
-try {
-  const params = { limit: 9, page };
-  if (category) params.category = category;
-  if (q) params.q = q;
-  [postsData, categories] = await Promise.all([
-    getPosts(params),
-    getCategories().then(r => r.categories),
-  ]);
-} catch (e) {
-  console.error(e.message);
-}
+const postsData = listPosts({ limit: 9, page, category, q });
 ---
 
 <BaseLayout title="All Articles" description="Browse all TechPulse articles">

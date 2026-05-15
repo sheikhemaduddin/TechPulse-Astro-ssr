@@ -1,21 +1,14 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PostCard from "../../components/ui/PostCard.astro";
-import { getCategory, getPosts } from "../../lib/api.js";
+import { categories, listPosts } from "../../lib/mock-data.js";
 
 const { slug } = Astro.params;
+const category = categories.find((c) => c.slug === slug);
 
-let category = null;
-let posts = [];
+if (!category) return Astro.redirect("/blog");
 
-try {
-  [category, posts] = await Promise.all([
-    getCategory(slug),
-    getPosts({ category: slug, limit: 12 }).then(r => r.posts),
-  ]);
-} catch (e) {
-  return Astro.redirect("/blog");
-}
+const posts = listPosts({ category: slug, limit: 12 }).posts;
 ---
 
 <BaseLayout title={category?.name} description={`${category?.name} articles on TechPulse`}>

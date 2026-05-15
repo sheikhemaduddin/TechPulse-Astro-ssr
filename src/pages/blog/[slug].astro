@@ -1,17 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getPost } from "../../lib/api.js";
+import { getPostDetail } from "../../lib/mock-data.js";
 
 const { slug } = Astro.params;
-
-let post = null;
-let error = null;
-
-try {
-  post = await getPost(slug);
-} catch (e) {
-  error = e.message;
-}
+const post = getPostDetail(slug);
 
 if (!post) return Astro.redirect("/blog");
 ---
